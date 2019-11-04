@@ -1,0 +1,55 @@
+sudo: false
+language: bash
+os:
+  - linux
+
+addons:
+  apt:
+    packages:
+      - libncurses-dev
+      - flex
+      - bison
+      - gperf
+      - python
+      - python-pip
+      - python-serial
+      - python-click
+      - python-cryptography
+      - python-future
+      - python-pyparsing
+      - python-pyelftools
+      - cmake
+      - ninja-build
+      - ccache
+
+before_install:
+  # Save path to the git respository
+  - PROJECT_PATH=$(pwd)
+
+install:
+  # Install ESP32 toolchain following steps as described
+  # in https://docs.espressif.com/projects/esp-idf/en/latest/get-started/linux-setup.html
+  # Prepare directory for the toolchain
+  - mkdir -p ~/esp
+  - cd ~/esp
+  # Get ESP-IDF from github
+  - git clone --recursive https://github.com/espressif/esp-idf.git
+  # Set the path to ESP-IDF directory
+  - export IDF_PATH=~/esp/esp-idf
+  - cd esp-idf
+  - git submodule update --init
+  - export PATH=$PATH:~/esp/esp-idf/tools
+  - export PATH=$PATH:~/esp/esp-idf/bin
+  #install python requirements
+  - cd $IDF_PATH
+  - sudo pip install -r requirements.txt
+  #export path properly
+  - cd ~/esp/esp-idf
+  - ./install.sh
+  - . $HOME/esp/esp-idf/export.sh
+
+script:
+  # build project
+  - cd $PROJECT_PATH
+  - idf.py build
+  - cd $IDF_PATH
